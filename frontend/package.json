@@ -20,7 +20,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider && craco start",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider && craco start",
     "dev:remote": "cross-env REACT_APP_DEV_REMOTE=remote npm start",
     "build": "craco build",
     "test": "craco test",
@@ -45,6 +45,6 @@
     "craco-less": "^1.17.1",
     "cross-env": "^7.0.3",
     "react-reconciler": "^0.26.2",
-    "react-refresh": "^0.9.0"
+    "react-refresh": "^0.10.0"
   }
 }
