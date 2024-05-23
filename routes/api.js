@@ -6,6 +6,7 @@ const router = express.Router();
 const adminController = require("../controllers/adminController");
 const clientController = require("../controllers/clientController");
 const endpointController = require("../controllers/endpointController");
+const channelController = require("../controllers/channelController");
 
 const leadController = require("../controllers/leadController");
 const productController = require("../controllers/productController");
@@ -31,6 +32,9 @@ router.route("/endpoint/update/:id").patch(catchErrors(endpointController.update
 router.route("/endpoint/delete/:id").delete(catchErrors(endpointController.delete));
 router.route("/endpoint/search").get(catchErrors(endpointController.search));
 router.route("/endpoint/list").get(catchErrors(endpointController.list));
+
+//____________________________________ API for channels _____________________________
+router.route("/channel/list").post(catchErrors(channelController.ChannelList));
 
 //_____________________________________ API for clients __________________________
 router.route("/client/create").post(catchErrors(clientController.create));
