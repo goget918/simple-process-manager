@@ -10,65 +10,89 @@ import { useControlContext } from "@/context/control";
 import uniqueId from "@/utils/uinqueId";
 import ControlTable from "@/components/ControlTable";
 import StartServiceModal from "@/components/StartServiceModal";
-
-function ChangeService({ config }) {
-  const { controlContextAction } = useControlContext();
-  const { selectServiceModal } = controlContextAction;
-  const { ADD_NEW_ENTITY } = config;
-
-  const handleClick = () => {
-    selectServiceModal.open();
-  };
-
-  return (
-    <Button onClick={handleClick} type="primary">
-      {ADD_NEW_ENTITY}
-    </Button>
-  );
-}
-
-
-function ToggleButton({ row }) {
-  const [isRunning, setIsRunning] = useState(false);
-  const dispatch = useDispatch();
-  const { controlContextAction } = useControlContext();
-  const { startModal } = controlContextAction;
-
-  const handleToggle = async () => {
-    try {
-      if (!isRunning) {
-        startModal.open();
-      }
-      setIsRunning(!isRunning);
-      // Assuming API request changes the state of the endpoint
-      // const response = await axios.post(`/api/endpoint/${row._id}/${isRunning ? 'stop' : 'start'}`);
-      // if (response.status === 200) {
-      //   setIsRunning(!isRunning);
-      // }
-    } catch (error) {
-      console.error("API request failed", error);
-    }
-  };
-
-  return (
-    <Button 
-      icon={isRunning ? <StopOutlined /> : <PlayCircleOutlined />} 
-      onClick={handleToggle}
-    >
-      {isRunning ? "Stop" : "Start"}
-    </Button>
-  );
-}
+import ServiceModal from "@/components/ServiceModal";
+import StartAllServiceModal from "@/components/StartAllServiceModal";
 
 export default function ControlDataTable({ config }) {
+  const [currentService, setCurrentService] = useState(null);
+
+  const ChangeService = ({ config, setIsLoading }) => {
+    const { controlContextAction } = useControlContext();
+    const { selectServiceModal } = controlContextAction;
+    const { ADD_NEW_ENTITY } = config;
+  
+    const handleClick = () => {
+      selectServiceModal.open();
+      setIsLoading(true);
+    };
+  
+    return (
+      <Button onClick={handleClick} type="primary">
+        {ADD_NEW_ENTITY}
+      </Button>
+    );
+  }
+  
+  const StartAllService = () => {
+    const { controlContextAction } = useControlContext();
+    const { startAllModal } = controlContextAction;
+  
+    const handleClick = () => {
+      startAllModal.open();
+    };
+  
+    return (
+      <Button onClick={handleClick} type="primary">
+        Start for all channels
+      </Button>
+    );
+  }
+  
+  
+  const ToggleButton = ({ row }) => {
+    const [isRunning, setIsRunning] = useState(false);
+    const dispatch = useDispatch();
+    const { controlContextAction } = useControlContext();
+    const { startModal } = controlContextAction;
+  
+    const handleToggle = async () => {
+      try {
+        if (!isRunning) {
+          startModal.open();
+        }
+        setIsRunning(!isRunning);
+        // Assuming API request changes the state of the endpoint
+        // const response = await axios.post(`/api/endpoint/${row._id}/${isRunning ? 'stop' : 'start'}`);
+        // if (response.status === 200) {
+        //   setIsRunning(!isRunning);
+        // }
+      } catch (error) {
+        console.error("API request failed", error);
+      }
+    };
+  
+    return (
+      <Button 
+        icon={isRunning ? <StopOutlined /> : <PlayCircleOutlined />} 
+        onClick={handleToggle}
+      >
+        {isRunning ? "Stop" : "Start"}
+      </Button>
+    );
+  }
+
   return (
     <>
       <ControlTable
         config={config}
         ActionButton={ToggleButton}
         ChangeService={ChangeService}
+        StartAllService={StartAllService}
+        currentService={currentService}
       />
       <StartServiceModal config={config}/>
+      <ServiceModal config={config} setCurrentService={setCurrentService} />
+      <StartAllServiceModal config={config} />
     </>
   );
 }

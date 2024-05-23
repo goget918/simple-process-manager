@@ -30,6 +30,18 @@ export function contextReducer(state, action) {
         isSelectModalOpen: false,
       };
 
+    case actionTypes.OPEN_START_ALL_MODAL:
+      return {
+        ...state,
+        isStartAllModalOpen: true,
+      };
+
+    case actionTypes.CLOSE_START_ALL_MODAL:
+      return {
+        ...state,
+        isStartAllModalOpen: false,
+      };
+
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }

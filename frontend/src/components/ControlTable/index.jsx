@@ -1,18 +1,56 @@
-import React, { useCallback, useEffect } from "react";
-import { Dropdown, Button, PageHeader, Table } from "antd";
+import React, { useCallback, useEffect, useState } from "react";
+import { Button, PageHeader, Table, Pagination, Image } from "antd";
 
-import { EllipsisOutlined } from "@ant-design/icons";
+import axios from "axios";
+
 import { useSelector, useDispatch } from "react-redux";
 import { crud } from "@/redux/crud/actions";
-import { selectListItems } from "@/redux/crud/selectors";
+import { request } from "@/request";
 
 import uniqueId from "@/utils/uinqueId";
 
-export default function ControlTable({ config, ActionButton, ChangeService }) {
-  const { entity, controlTableColumns: initialColumns, ControlTableTitle } = config;
+export default function ControlTable({ config, ActionButton, ChangeService, StartAllService, currentService }) {
+  const { entity } = config;
+  const [channelList, setChannelList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentServiceName, setCurrentServiceName] = useState("Please select service to see all channels");
+  const pageSize = 10;
 
-  const ControlTableColumns = [
-    ...initialColumns,
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+
+  const currentPageData = channelList.slice(startIndex, endIndex);
+
+  const dynamicKey = channelList.length == 0 ? "GUID" : Object.keys(channelList[0]).find(key => key !== "name" && key !== "id" && key !== "image");
+
+  const controlTableColumns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      render: (text, row) => (
+        <div style={{ alignItems: "center"}}>
+          <div style={{ background: "black", width: "80px"}}>
+            <Image
+              width={80}
+              height={40}
+              src={row.image}
+              alt={row.name}
+              preview={false} // Disable preview if you don't want the preview feature
+            />
+          </div>
+          <p>{row.name}</p>
+        </div>
+      ),
+    },
+    {
+      title: "ID",
+      dataIndex: "id",
+    },
+    {
+      title: dynamicKey,
+      dataIndex: dynamicKey,
+    },
     {
       title: "Action",
       render: (row) => (
@@ -21,73 +59,52 @@ export default function ControlTable({ config, ActionButton, ChangeService }) {
     },
   ];
 
-  const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
-  const { pagination, items } = listResult;
-
   const dispatch = useDispatch();
 
-  // use dummy value for now
-  const channelList = [
-    {
-      "guid": "b942979b6756473ebb35b015ebe25449",
-      "id": "1796",
-      "image": "http://p-img.movetv.com/cms/images/e94a99d4306de05773111b7c9c3441e548a95129.png",
-      "name": "21 Jump Street"
-    },
-    {
-      "guid": "634a8db32f7046bc93835e3ecece7f8f",
-      "id": "1566",
-      "image": "http://p-img.movetv.com/images/0913e3f00cc331067a9387ad60d920f3bfaca064",
-      "name": "40 y 20"
-    },
-    {
-      "guid": "6f6788bea06243da873b8b3450b4aaa0",
-      "id": "1283",
-      "image": "http://p-img.movetv.com/cms/images/9c9407a0ce3dc37b64d99077f0088d3f6cb8c4a8.png",
-      "name": "ABC News Live"
-    },
-    {
-      "guid": "a1e386e41a604ac684850610c693213b",
-      "id": "2176",
-      "image": "http://p-img.movetv.com/1280x720/992dee1a4244c1bad093c9039e5f6d20.png",
-      "name": "ABP Ananda"
-    },
-    {
-      "guid": "29dd2d3ef052486482f4c74932a9924f",
-      "id": "2175",
-      "image": "http://p-img.movetv.com/1280x720/ef72d5f41939efb281a9f68950f7dfea.png",
-      "name": "ABP Asmita"
-    },];
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  }
 
-  const handleControlTableLoad = useCallback((pagination) => {
-    dispatch(crud.list(entity, pagination.current));
-  }, [dispatch, entity]);
-
-  useEffect(() => {
+  useEffect(async () => {
     dispatch(crud.list(entity));
-  }, [dispatch, entity]);
+    if (currentService) {
+      const response = await request.post("channel/list", { id: currentService});
+      const listResult = response.result;
+
+      if (listResult) {
+        setCurrentServiceName(listResult.service);
+        setChannelList(listResult.channels);
+      }
+      setIsLoading(false);
+    }
+  }, [dispatch, entity, currentService]);
 
   return (
     <>
       <PageHeader
         onBack={() => window.history.back()}
-        title={ControlTableTitle}
+        title={currentServiceName}
         ghost={false}
         extra={[
-          <Button onClick={handleControlTableLoad} key={`${uniqueId()}`}>
-            Refresh
-          </Button>,
-          <ChangeService key={`${uniqueId()}`} config={config} />,
+          <StartAllService key={`${uniqueId()}`} />,
+          <ChangeService key={`${uniqueId()}`} config={config} setIsLoading={setIsLoading} />
         ]}
         style={{ padding: "20px 0px" }}
       />
       <Table
-        columns={ControlTableColumns}
-        rowKey={(item) => item.guid}
-        dataSource={channelList}
-        pagination={pagination}
-        loading={listIsLoading}
-        onChange={handleControlTableLoad}
+        columns={controlTableColumns}
+        rowKey={(item) => item.id}
+        dataSource={currentPageData}
+        pagination={false}
+        loading={isLoading}
+      />
+      <Pagination
+        current={currentPage}
+        total={channelList.length}
+        pageSize={pageSize}
+        onChange={handlePageChange}
+        showSizeChanger={false} // Hide page size changer
+        style={{ marginTop: '16px', textAlign: 'right' }}
       />
     </>
   );

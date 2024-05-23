@@ -29,34 +29,6 @@ function Service() {
       dataIndex: "url",
     },
   ];
-  const controlTableColumns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      render: (text, row) => (
-        <div style={{ alignItems: "center"}}>
-          <div style={{ background: "black", width: "80px"}}>
-            <Image
-              width={80}
-              src={row.image}
-              alt={row.name}
-              preview={false} // Disable preview if you don't want the preview feature
-            />
-          </div>
-          <p>{row.name}</p>
-        </div>
-      ),
-    },
-    {
-      title: "ID",
-      dataIndex: "id",
-    },
-    {
-      title: "GUID",
-      dataIndex: "guid",
-    }
-  ];
-
 
   const ADD_NEW_ENTITY = "Change service";
   const DATATABLE_TITLE = "Endpoints List";
@@ -73,7 +45,6 @@ function Service() {
     UPDATE_ENTITY,
     DATATABLE_TITLE,
     readColumns,
-    controlTableColumns,
     searchConfig,
     entityDisplayLabels,
   };
