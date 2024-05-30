@@ -41,7 +41,7 @@ export default function AppRouter() {
     <Suspense fallback={<PageLoader />}>
       <AnimatePresence exitBeforeEnter initial={false}>
         <Switch location={location} key={location.pathname}>
-          <PrivateRoute path="/" component={Dashboard} exact />
+          <PrivateRoute path="/" component={Endpoint} exact />
           <PrivateRoute component={Customer} path="/customer" exact />
           <PrivateRoute
             component={SelectCustomer}

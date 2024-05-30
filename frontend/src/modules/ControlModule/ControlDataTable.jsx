@@ -1,11 +1,13 @@
 import React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Menu } from "antd";
 import { StopOutlined, PlayCircleOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
-
+import { crud } from "@/redux/crud/actions";
+import { useCrudContext } from "@/context/crud";
+import { selectListItems } from "@/redux/crud/selectors";
 import { useControlContext } from "@/context/control";
 import uniqueId from "@/utils/uinqueId";
 import ControlTable from "@/components/ControlTable";
@@ -14,7 +16,13 @@ import ServiceModal from "@/components/ServiceModal";
 import StartAllServiceModal from "@/components/StartAllServiceModal";
 
 export default function ControlDataTable({ config }) {
+  const { entity } = config;
+  const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
+  const { pagination, items } = listResult;
+  const dispatch = useDispatch();
+  const { crudContextAction } = useCrudContext();
   const [currentService, setCurrentService] = useState(null);
+
 
   const ChangeService = ({ config, setIsLoading }) => {
     const { controlContextAction } = useControlContext();
@@ -51,7 +59,7 @@ export default function ControlDataTable({ config }) {
   
   const ToggleButton = ({ row }) => {
     const [isRunning, setIsRunning] = useState(false);
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     const { controlContextAction } = useControlContext();
     const { startModal } = controlContextAction;
   
@@ -80,6 +88,17 @@ export default function ControlDataTable({ config }) {
       </Button>
     );
   }
+
+  useEffect(() => {
+    dispatch(crud.list(entity));
+  }, []);
+
+  useEffect(() => {
+    // Set the first 
+    if (items.length > 0) {
+      setCurrentService(items[0]._id);
+    }
+  }, [items]);
 
   return (
     <>

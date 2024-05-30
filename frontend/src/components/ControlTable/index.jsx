@@ -14,7 +14,7 @@ export default function ControlTable({ config, ActionButton, ChangeService, Star
   const [channelList, setChannelList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentServiceName, setCurrentServiceName] = useState("Please select service to see all channels");
+  const [currentServiceName, setCurrentServiceName] = useState("");
   const pageSize = 10;
 
   const startIndex = (currentPage - 1) * pageSize;
