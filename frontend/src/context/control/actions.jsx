@@ -18,6 +18,14 @@ const contextActions = (dispatch) => {
         dispatch({ type: actionTypes.CLOSE_SELECT_SERVICE_MODAL });
       },
     },
+    startAllModal: {
+      open: () => {
+        dispatch({ type: actionTypes.OPEN_START_ALL_MODAL });
+      },
+      close: () => {
+        dispatch({ type: actionTypes.CLOSE_START_ALL_MODAL });
+      },
+    },
   };
 };
 

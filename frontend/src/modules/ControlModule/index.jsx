@@ -2,7 +2,6 @@ import React, { useLayoutEffect } from "react";
 import { Row, Col, Button } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
-import ServiceModal from "@/components/ServiceModal";
 import SearchItem from "@/components/SearchItem";
 
 import { useDispatch } from "react-redux";
@@ -58,7 +57,6 @@ export default function CrudModule({ config, createForm, updateForm }) {
       fixHeaderPanel={<FixHeaderPanel config={config} />}
     >
       <ControlDataTable config={config} />
-      <ServiceModal config={config} />
     </CrudLayout>
   );
 }

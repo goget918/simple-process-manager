@@ -6,6 +6,9 @@ const contextSelectors = (state) => {
     isSelectModalOpen: () => {
       return state.isSelectModalOpen;
     },
+    isStartAllModalOpen: () => {
+      return state.isStartAllModalOpen;
+    },
   };
 };
 
