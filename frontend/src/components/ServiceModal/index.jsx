@@ -8,7 +8,7 @@ import { useControlContext } from "@/context/control";
 import { selectListItems } from "@/redux/crud/selectors";
 import { valueByString } from "@/utils/helpers";
 
-export default function ServiceModal({ config }) {
+export default function ServiceModal({ config, setCurrentService }) {
   let {
     entity,
     entityDisplayLabels,
@@ -48,8 +48,7 @@ export default function ServiceModal({ config }) {
     // const id = current._id;
     // dispatch(crud.delete(entity, id));
     if (selectedItem) {
-      console.log('Selected Item:', selectedItem);
-      // You can perform additional actions with the selected item here
+      setCurrentService(selectedItem);
     }
     selectServiceModal.close();
   };
