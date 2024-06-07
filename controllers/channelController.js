@@ -28,9 +28,7 @@ class channelController {
           'Accept': 'application/json'
         }
       });
-    
-    console.log(endpoint);
-    
+        
     return res.status(200).json({
         success: true,
         result: {

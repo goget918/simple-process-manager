@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Input } from "antd";
+import axios from "axios";
+import { API_BASE_URL } from "@/config/serverApiConfig";
 
+import { Modal, Input, notification } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { useControlContext } from "@/context/control";
 import { valueByString } from "@/utils/helpers";
 
-export default function StartAllServiceModal({ config }) {
+export default function StartAllServiceModal({ config, currentService }) {
   let {
     entity,
     entityDisplayLabels,
@@ -25,22 +27,29 @@ export default function StartAllServiceModal({ config }) {
     if (isSuccess) {
       startAllModal.close();
     }
-    if (current) {
-      let labels = entityDisplayLabels
-        .map((x) => valueByString(current, x))
-        .join(" ");
-
-      // setDisplayItem(labels);
-    }
   }, [isSuccess, current]);
 
-  const handleOk = () => {
+  const handleOk = async () => {
     setIsLoading(true);
-    // Simulate an API call
-    setTimeout(() => {
-      setIsLoading(false);
-      startAllModal.close();
-    }, 2000);
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}parser/startall`,
+        {
+          serviceId: currentService,
+          params: additionalParams
+        }
+      );
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+    notification.success({
+      message: "Success",
+      description: "Starting for all channels..."
+    });
+    setIsLoading(false);
+    startAllModal.close();
   };
   const handleCancel = () => {
     if (!isLoading) startAllModal.close();

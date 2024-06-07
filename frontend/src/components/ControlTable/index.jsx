@@ -9,56 +9,61 @@ import { request } from "@/request";
 
 import uniqueId from "@/utils/uinqueId";
 
-export default function ControlTable({ config, ActionButton, ChangeService, StartAllService, currentService }) {
+export default function ControlTable({ config, ActionButton, ViewLogButton, ChangeService, StartAllService, currentService }) {
   const { entity } = config;
   const [channelList, setChannelList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [currentServiceName, setCurrentServiceName] = useState("");
-  const pageSize = 10;
 
+  const pageSize = 10;
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-
   const currentPageData = channelList.slice(startIndex, endIndex);
-
   const dynamicKey = channelList.length == 0 ? "GUID" : Object.keys(channelList[0]).find(key => key !== "name" && key !== "id" && key !== "image");
-
+  
   const controlTableColumns = [
     {
       title: "Name",
       dataIndex: "name",
+      width: 120,
       render: (text, row) => (
-        <div style={{ alignItems: "center"}}>
-          <div style={{ background: "black", width: "80px"}}>
+        <div style={{ alignItems: "center", display: "flex" }}>
+          <div style={{ background: "black", width: "80px" }}>
             <Image
               width={80}
               height={40}
               src={row.image}
               alt={row.name}
-              preview={false} // Disable preview if you don't want the preview feature
+              preview={false}
             />
           </div>
-          <p>{row.name}</p>
+          <p style={{ marginLeft: '10px' }}>{row.name}</p>
         </div>
       ),
     },
     {
       title: "ID",
       dataIndex: "id",
+      width: 50,
     },
     {
       title: dynamicKey,
       dataIndex: dynamicKey,
+      width: 330,
     },
     {
       title: "Action",
+      width: 190,
       render: (row) => (
-        <ActionButton row={row} />
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <ActionButton row={row} />
+          <ViewLogButton row={row} />
+        </div>
       ),
     },
   ];
-
+  
   const dispatch = useDispatch();
 
   const handlePageChange = (page) => {
@@ -67,8 +72,11 @@ export default function ControlTable({ config, ActionButton, ChangeService, Star
 
   useEffect(async () => {
     dispatch(crud.list(entity));
+  }, [dispatch, entity]);
+
+  useEffect(async () => {
     if (currentService) {
-      const response = await request.post("channel/list", { id: currentService});
+      const response = await request.post("channel/list", { id: currentService });
       const listResult = response.result;
 
       if (listResult) {
@@ -77,7 +85,7 @@ export default function ControlTable({ config, ActionButton, ChangeService, Star
       }
       setIsLoading(false);
     }
-  }, [dispatch, entity, currentService]);
+  }, [currentService]);
 
   return (
     <>

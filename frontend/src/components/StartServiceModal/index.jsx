@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Input } from "antd";
-
-import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { API_BASE_URL } from "@/config/serverApiConfig";
+import { Modal, Input, notification } from "antd";
+import { useDispatch } from "react-redux";
 import { useControlContext } from "@/context/control";
 import { valueByString } from "@/utils/helpers";
 
-export default function StartServiceModal({ config }) {
+export default function StartServiceModal({
+  config,
+  currentService,
+  currentChannel
+}) {
   let {
     entity,
     entityDisplayLabels,
@@ -18,8 +23,8 @@ export default function StartServiceModal({ config }) {
   const { startModal } = controlContextAction;
   const [additionalParams, setAdditionalParams] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const current = null;
-  const isSuccess = false;
+  const current = null; // This appears to be unused and unnecessary
+  const isSuccess = false; // This appears to be unused and unnecessary
 
   useEffect(() => {
     if (isSuccess) {
@@ -29,19 +34,45 @@ export default function StartServiceModal({ config }) {
       let labels = entityDisplayLabels
         .map((x) => valueByString(current, x))
         .join(" ");
-
-      // setDisplayItem(labels);
+      // setDisplayItem(labels); // Ensure you have setDisplayItem in your component state if needed
     }
-  }, [isSuccess, current]);
+  }, [isSuccess, current, entityDisplayLabels, startModal]);
 
-  const handleOk = () => {
+  const handleOk = async () => {
+    if (!currentService || !currentChannel) {
+      notification.error({
+        message: "Missing Information",
+        description: "Service or channel information is missing. Please select both."
+      });
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate an API call
-    setTimeout(() => {
-      setIsLoading(false);
-      startModal.close();
-    }, 2000);
+    console.log(`Starting service ${currentService} with channel ${currentChannel.id} and params ${additionalParams}`);
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}parser/start`, {
+        serviceId: currentService,
+        channelId: currentChannel.id,
+        params: additionalParams
+      });
+      console.log("API response:", response);
+      notification.success({
+        message: "Success",
+        description: "Service started successfully"
+      });
+    } catch (err) {
+      console.error("API error:", err);
+      notification.error({
+        message: "Error",
+        description: "Failed to start the service"
+      });
+    }
+
+    setIsLoading(false);
+    startModal.close();
   };
+
   const handleCancel = () => {
     if (!isLoading) startModal.close();
   };
@@ -58,9 +89,8 @@ export default function StartServiceModal({ config }) {
       onCancel={handleCancel}
       confirmLoading={isLoading}
     >
-      <p>
-        {descriptionText}
-        <br />
+      <div>
+        <p>{descriptionText}</p>
         <div style={{ marginTop: "20px" }}>
           <Input
             value={additionalParams}
@@ -68,7 +98,7 @@ export default function StartServiceModal({ config }) {
             placeholder="EX: --proxy sling=http://proxy_domain.com/ -p /out/1808"
           />
         </div>
-      </p>
+      </div>
     </Modal>
   );
 }

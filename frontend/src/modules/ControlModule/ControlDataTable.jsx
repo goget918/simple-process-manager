@@ -1,10 +1,7 @@
-import React from "react";
-
-import { useState, useEffect } from "react";
+import React, { useEffect, useState, memo, useCallback } from "react";
 import { Button, Menu } from "antd";
-import { StopOutlined, PlayCircleOutlined } from "@ant-design/icons";
+import { StopOutlined, PlayCircleOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
 import { crud } from "@/redux/crud/actions";
 import { useCrudContext } from "@/context/crud";
 import { selectListItems } from "@/redux/crud/selectors";
@@ -14,6 +11,7 @@ import ControlTable from "@/components/ControlTable";
 import StartServiceModal from "@/components/StartServiceModal";
 import ServiceModal from "@/components/ServiceModal";
 import StartAllServiceModal from "@/components/StartAllServiceModal";
+import LogModal from "@/components/LogModal";
 
 export default function ControlDataTable({ config }) {
   const { entity } = config;
@@ -22,7 +20,9 @@ export default function ControlDataTable({ config }) {
   const dispatch = useDispatch();
   const { crudContextAction } = useCrudContext();
   const [currentService, setCurrentService] = useState(null);
-
+  const [currentChannel, setCurrentChannel] = useState(null);
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const [channelLogs, setChannelLogs] = useState({});
 
   const ChangeService = ({ config, setIsLoading }) => {
     const { controlContextAction } = useControlContext();
@@ -31,7 +31,6 @@ export default function ControlDataTable({ config }) {
   
     const handleClick = () => {
       selectServiceModal.open();
-      setIsLoading(true);
     };
   
     return (
@@ -56,45 +55,70 @@ export default function ControlDataTable({ config }) {
     );
   }
   
-  
-  const ToggleButton = ({ row }) => {
+  const ActionButton = ({ row, currentService }) => {
     const [isRunning, setIsRunning] = useState(false);
-    // const dispatch = useDispatch();
     const { controlContextAction } = useControlContext();
     const { startModal } = controlContextAction;
   
     const handleToggle = async () => {
       try {
         if (!isRunning) {
+          setCurrentChannel(row);
           startModal.open();
         }
-        setIsRunning(!isRunning);
-        // Assuming API request changes the state of the endpoint
-        // const response = await axios.post(`/api/endpoint/${row._id}/${isRunning ? 'stop' : 'start'}`);
-        // if (response.status === 200) {
-        //   setIsRunning(!isRunning);
-        // }
       } catch (error) {
         console.error("API request failed", error);
       }
     };
+
+    useEffect(() => {
+      const channelLog = channelLogs[row.id];
+      if (channelLog && channelLog.length > 0) {
+        channelLog.forEach(log => {
+          if (log.includes('started')) {
+            setIsRunning(true);
+          } else if (log.includes('completed')) {
+            setIsRunning(false);
+          }
+        });
+      }
+    }, [channelLogs, row.id]);
   
     return (
       <Button 
         icon={isRunning ? <StopOutlined /> : <PlayCircleOutlined />} 
         onClick={handleToggle}
+        style={{ width: "100px"}}
       >
-        {isRunning ? "Stop" : "Start"}
+        {isRunning ? "Running" : "Start"}
       </Button>
     );
   }
 
-  useEffect(() => {
-    dispatch(crud.list(entity));
-  }, []);
+  // Memoize the ViewLogButton component
+  const MemoizedViewLogButton = memo(({ row, setCurrentChannel, setIsLogModalOpen }) => {
+    const handleToggle = useCallback(() => {
+      setCurrentChannel(row);
+      setIsLogModalOpen(true);
+      console.log("view log button clicked");
+    }, [row, setCurrentChannel, setIsLogModalOpen]);
+  
+    return (
+      <Button
+        icon={<FileTextOutlined />}
+        onClick={handleToggle}
+      >
+        View Console Log
+      </Button>
+    );
+  });
 
   useEffect(() => {
-    // Set the first 
+    dispatch(crud.list(entity));
+  }, [dispatch, entity]);
+
+  useEffect(() => {
+    // Set the first service by default for service modal
     if (items.length > 0) {
       setCurrentService(items[0]._id);
     }
@@ -104,14 +128,39 @@ export default function ControlDataTable({ config }) {
     <>
       <ControlTable
         config={config}
-        ActionButton={ToggleButton}
+        ActionButton={ActionButton}
+        ViewLogButton={({ row }) => (
+          <MemoizedViewLogButton
+            row={row}
+            setCurrentChannel={setCurrentChannel}
+            setIsLogModalOpen={setIsLogModalOpen}
+          />
+        )}
         ChangeService={ChangeService}
         StartAllService={StartAllService}
         currentService={currentService}
       />
-      <StartServiceModal config={config}/>
-      <ServiceModal config={config} setCurrentService={setCurrentService} />
-      <StartAllServiceModal config={config} />
+      <StartServiceModal
+        config={config}
+        currentService={currentService}
+        currentChannel={currentChannel}
+      />
+      <ServiceModal
+        config={config}
+        setCurrentService={setCurrentService}
+      />
+      <StartAllServiceModal
+        config={config}
+        currentService={currentService}
+      />
+      <LogModal
+        isLogModalOpen={isLogModalOpen}
+        setIsLogModalOpen={setIsLogModalOpen}
+        currentService={currentService}
+        currentChannel={currentChannel}
+        channelLogs={channelLogs}
+        setChannelLogs={setChannelLogs}
+      />
     </>
   );
 }

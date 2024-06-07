@@ -23,7 +23,9 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^6.6.2",
     "mongoose": "^8.4.0",
-    "mongoose-autopopulate": "^0.14.0"
+    "mongoose-autopopulate": "^0.14.0",
+    "socket.io": "^4.7.5",
+    "ws": "^8.17.0"
   },
   "devDependencies": {
     "nodemon": "^1.19.2"

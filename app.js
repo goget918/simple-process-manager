@@ -7,6 +7,7 @@ const promisify = require("es6-promisify");
 
 const apiRouter = require("./routes/api");
 const authApiRouter = require("./routes/authApi");
+const io = require("./server");
 
 const errorHandlers = require("./handlers/errorHandlers");
 
@@ -67,7 +68,7 @@ app.use(function (req, res, next) {
 });
 
 app.use("/api", authApiRouter);
-app.use("/api", apiRouter);
+app.use("/api", apiRouter(io));
 
 // for development & production don't use this line app.use("/api", apiRouter); , this is just demo login contoller
 // app.use("/api", apiRouter);

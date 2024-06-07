@@ -23,30 +23,12 @@ export default function ServiceModal({ config, setCurrentService }) {
   const { result: listResult, isLoading: listIsLoading } = useSelector(selectListItems);
   const { pagination, items } = listResult;
   const [selectedItem, setSelectedItem] = useState(null);
-  const [displayItem, setDisplayItem] = useState("");
 
   useEffect(() => {
     dispatch(crud.list(entity));
   }, []);
 
-  // useEffect(() => {
-  //   if (isSuccess) {
-  //     modal.close();
-  //     dispatch(crud.list(entity));
-  //     dispatch(crud.resetAction(entity));
-  //   }
-  //   if (current) {
-  //     let labels = entityDisplayLabels
-  //       .map((x) => valueByString(current, x))
-  //       .join(" ");
-
-  //     setDisplayItem(labels);
-  //   }
-  // }, [isSuccess, current]);
-
   const handleOk = () => {
-    // const id = current._id;
-    // dispatch(crud.delete(entity, id));
     if (selectedItem) {
       setCurrentService(selectedItem);
     }
@@ -59,13 +41,6 @@ export default function ServiceModal({ config, setCurrentService }) {
 
   const handleSelectChange = (value) => {
     setSelectedItem(value);
-    const selected = items.find(item => item._id === value);
-    if (selected) {
-      let labels = entityDisplayLabels
-        .map((x) => valueByString(selected, x))
-        .join(" ");
-      setDisplayItem(labels);
-    }
   };
 
   return (
@@ -78,7 +53,6 @@ export default function ServiceModal({ config, setCurrentService }) {
     >
       <p>
         {deleteMessage}
-        {displayItem}
       </p>
         <Select
           style={{ width: '100%', marginTop: "20px" }}
@@ -93,7 +67,6 @@ export default function ServiceModal({ config, setCurrentService }) {
             </Select.Option>
           ))}
         </Select>
-      
     </Modal>
   );
 }
