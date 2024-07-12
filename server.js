@@ -14,11 +14,9 @@ if (major < 10 || (major === 10 && minor <= 0)) {
 require("dotenv").config({ path: ".env" });
 
 // Connect to our Database and handle any bad connections
-mongoose.connect(process.env.DATABASE);
-mongoose.Promise = global.Promise; // Tell Mongoose to use ES6 promises
-mongoose.connection.on("error", (err) => {
-  console.error(`🚫 Error → : ${err.message}`);
-});
+mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true })
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.log('MongoDB connection error:', err));
 
 const glob = require("glob");
 const path = require("path");
@@ -41,7 +39,7 @@ app.use(cors({
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://149.28.44.250:3000", // Frontend URL
+    origin: "http://149.28.44.250", // Frontend URL
     methods: ["GET", "POST"],
     credentials: true
   }

@@ -19,8 +19,7 @@ export default function ControlTable({ config, ActionButton, ViewLogButton, Chan
   const pageSize = 10;
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentPageData = channelList.slice(startIndex, endIndex);
-  const dynamicKey = channelList.length == 0 ? "GUID" : Object.keys(channelList[0]).find(key => key !== "name" && key !== "id" && key !== "image");
+  const dynamicKey =  !channelList || channelList?.length == 0 ? "GUID" : Object.keys(channelList[0]).find(key => key !== "name" && key !== "id" && key !== "image");
   
   const controlTableColumns = [
     {
@@ -76,14 +75,20 @@ export default function ControlTable({ config, ActionButton, ViewLogButton, Chan
 
   useEffect(async () => {
     if (currentService) {
-      const response = await request.post("channel/list", { id: currentService });
-      const listResult = response.result;
-
-      if (listResult) {
-        setCurrentServiceName(listResult.service);
-        setChannelList(listResult.channels);
+      try {
+        const response = await request.post("channel/list", { id: currentService });
+        const listResult = response.result;
+  
+        if (listResult) {
+          setCurrentServiceName(listResult.service);
+          setChannelList(listResult.channels);
+        }
+        setIsLoading(false);
+      } catch (err) {
+        setChannelList([]);
+        setCurrentServiceName('');
       }
-      setIsLoading(false);
+      
     }
   }, [currentService]);
 
@@ -102,13 +107,13 @@ export default function ControlTable({ config, ActionButton, ViewLogButton, Chan
       <Table
         columns={controlTableColumns}
         rowKey={(item) => item.id}
-        dataSource={currentPageData}
+        dataSource={channelList ? channelList.slice(startIndex, endIndex) : []}
         pagination={false}
         loading={isLoading}
       />
       <Pagination
         current={currentPage}
-        total={channelList.length}
+        total={channelList ? channelList.length : 0}
         pageSize={pageSize}
         onChange={handlePageChange}
         showSizeChanger={false} // Hide page size changer
